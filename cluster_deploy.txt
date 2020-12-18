@@ -1,0 +1,71 @@
+1.	Kubernetes cluster on premise
+1.1 Pre-requirement 
+                    Machine mini-Requirements are given below:
+1.	Master: 2 cpu, 2 GB ram and 20 GB memory
+2.	Worker: 1 cpu, 2 GB ram and 20 GB memory 
+3.	Turn off the swap memory (kubernetes does not support)
+4.	Turn off the firewall/ add required port in firewall 
+1.2 Set the host name
+ hostnamectl set-hostname master
+ hostnamectl set-hostname worker-1
+ Add the host name with IP in both machine 
+ Add in etc/hosts file and then try to ping through hostname
+Now, we have swapped memory off from the machine and go into etc/fstab
+Run the following command on master and worker:
+cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+EOF
+sudo sysctl --system
+
+Now, we have opened following ports on Master that are mention in given below:
+ 
+
+
+Similarly, we have opened the following ports on Worker that are mention in given below:
+ 
+
+Install docker by following command on master and worker
+sudo yum-config-manager \
+    --add-repo \
+   https://download.docker.com/linux/centos/docker-ce.repo
+
+sudo yum install docker-ce docker-ce-cli containerd.io -y
+systemctl enable docker
+systemctl start docker 
+Run the following command on master and worker-1
+cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-\$basearch
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+exclude=kubelet kubeadm kubectl
+EOF
+sudo setenforce 0
+sudo sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
+
+sudo yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
+
+sudo systemctl enable --now kubelet
+
+
+
+
+Now, we have executed command on “master to make master” that are given below: 
+kubeadm init
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+
+1.3	Installing a Pod network add-on master
+kubectl apply -f  https://docs.projectcalico.org/v3.14/manifests/calico.yaml
+
+Now, we have executed the commands given by “master on the worker to add worker” in the cluster, like that
+kubeadm join 172.31.66.232:6443 --token zwijtx.0suhg87zu2scryfh --discovery-token-ca-cert-hash sha256:6ba0a6dc3d07a01e28a04f8ef88fbd8d2ed529c8955dcbe327156542fbaf9136
+
+
+

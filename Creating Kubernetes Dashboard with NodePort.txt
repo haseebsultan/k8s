@@ -1,0 +1,48 @@
+Creating Kubernetes Dashboard with Node_Port
+
+Solution Link: https://computingforgeeks.com/how-to-install-kubernetes-dashboard-with-nodeport/
+Step 1: Configure kubectl
+We’ll use the kubectl kubernetes management tool to deploy dashboard to the Kubernetes cluster. You can configure kubectl
+Step 2: Deploy Kubernetes Dashboard
+The default Dashboard deployment contains a minimal set of RBAC privileges needed to run. You can deploy Kubernetes dashboard with the command below.
+kubectl apply -f     https://raw.githubusercontent.com/kubernetes/dashboard/master/aio/deploy/recommended.yaml
+This will use the default values for the deployment. If you want to make some modifications to the file, you’ll have to download it to your local machine.
+Wget https://raw.githubusercontent.com/kubernetes/dashboard/master/aio/deploy/recommended.yaml
+Make the copy of yml file
+mv recommended.yaml kubernetes-dashboard-deployment.yml
+Modify the file to fit your deployment needs.
+vim kubernetes-dashboard-deployment.yml
+
+I’ll modify the Kubernetes dashboard service to be of NodePort type.
+ 
+
+NodePort exposes the Service on each Node’s IP at a static port (the NodePort). A ClusterIP Service, to which the NodePort Service routes, is automatically created.
+kubectl apply -f kubernetes-dashboard-deployment.yml
+Run the following command to verify the Dashboard deployment, Pods and service running or not
+kubectl get deployments -n kubernetes-dashboard
+ 
+
+kubectl get pods -n kubernetes-dashboard
+ 
+
+kubectl get service -n kubernetes-dashboard     
+ 
+
+Step 3: Accessing Kubernetes Dashboard
+My Service deployment was assigned a port 30038/TCP. Let’s confirm if access to the dashboard is working.
+Solution Link: https://www.replex.io/blog/how-to-install-access-and-add-heapster-metrics-to-the-kubernetes-dashboard
+Kubernetes Dashboard Authentication
+There are two options to authenticate our Kubernetes dashboard account; using either the token or the kubeconfig method. For the purposes of this tutorial, we will use the token authentication method.
+Create the dashboard service account
+kubectl create serviceaccount dashboard-admin-sa
+This will create a service account named dashboard-admin-sa in the default namespace
+Next bind the dashboard-admin-service-account service account to the cluster-admin role
+kubectl create clusterrolebinding dashboard-admin-sa 
+--clusterrole=cluster-admin --serviceaccount=default:dashboard-admin-sa
+When we created the dashboard-admin-sa service account Kubernetes also created a secret for it.
+kubectl get secrets
+ 
+Use kubectl describe to get the access token:
+kubectl describe secret dashboard-admin-sa-token-kw7vn
+ 
+Copy the token and enter it into the token field on the Kubernetes dashboard login page.

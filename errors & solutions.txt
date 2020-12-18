@@ -1,0 +1,21 @@
+ERRORS & SOLUTIONS
+“Error”
+ 
+Solution Link:    https://my.oschina.net/u/4408611/blog/4660483
+Solution steps:
+Step 01:  Check the following files exit or not: by this command
+ls /etc/kubernetes/manifests/
+Output should be
+ 
+Step 02:  Run the command and remove the port=0 line
+vim /etc/kubernetes/manifests/kube-controller-manager.yaml
+ 
+
+
+Step 03: Run the command and remove the port=0 line again from 
+ 
+
+Step 04:  Restart the kubelet by given command
+systemctl restart kubelet
+Now Everything will be OK,
+ 
